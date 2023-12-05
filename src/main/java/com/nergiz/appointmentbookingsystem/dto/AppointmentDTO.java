@@ -11,9 +11,9 @@ import java.util.List;
 @Builder
 public class AppointmentDTO {
     Long id;
-    private AvailabilitySlotDTO slotDTO;
     private UserDTO bookerUser;
     @Builder.Default
     private AppointmentStatus appointmentStatus = AppointmentStatus.BOOKED;
+    private AvailabilitySlotDTO availabilitySlotDTO;
     private List<NotificationDTO> notificationDTOList;
 }

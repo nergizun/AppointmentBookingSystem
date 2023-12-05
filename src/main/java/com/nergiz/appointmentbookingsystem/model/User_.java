@@ -1,16 +1,21 @@
 package com.nergiz.appointmentbookingsystem.model;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Entity
-public class User {
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class User_ {
     @Id
-    //@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String username;
@@ -26,13 +31,4 @@ public class User {
     @OneToMany(mappedBy = "bookerUser", cascade = CascadeType.ALL)
     private List<Appointment> bookedAppointments;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    // getters and setters
 }

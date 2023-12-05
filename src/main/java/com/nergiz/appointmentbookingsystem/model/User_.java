@@ -31,14 +31,4 @@ public class User_ {
     @OneToMany(mappedBy = "bookerUser", cascade = CascadeType.ALL)
     private List<Appointment> bookedAppointments;
 
-    @Override
-    public String toString() {
-        return "User_{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", email='" + email + '\'' +
-                // Other fields excluding references to AvailabilitySlot
-                '}';
-    }
-
 }

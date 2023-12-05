@@ -1,9 +1,11 @@
 package com.nergiz.appointmentbookingsystem.service;
 
 import com.nergiz.appointmentbookingsystem.dto.AvailabilitySlotDTO;
+import com.nergiz.appointmentbookingsystem.exception.UserNotFoundException;
 import com.nergiz.appointmentbookingsystem.model.AvailabilitySlot;
 import com.nergiz.appointmentbookingsystem.model.User_;
 import com.nergiz.appointmentbookingsystem.repository.AvailabilitySlotRepository;
+import com.nergiz.appointmentbookingsystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -18,22 +20,24 @@ import java.util.stream.Collectors;
 public class AvailabilitySlotService {
 
     private final AvailabilitySlotRepository availabilitySlotRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Autowired
     public AvailabilitySlotService(
             AvailabilitySlotRepository availabilitySlotRepository,
-            UserService userService,
+            UserRepository userRepository,
             ApplicationEventPublisher eventPublisher) {
         this.availabilitySlotRepository = availabilitySlotRepository;
-        this.userService = userService;
+        this.userRepository = userRepository;
         this.eventPublisher = eventPublisher;
     }
 
     @Transactional
     public AvailabilitySlotDTO addAvailabilitySlot(Long userId, AvailabilitySlotDTO availabilitySlotDTO) {
-        User_ user = userService.getUser(userId);
+        User_ user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User_ not found with id: " + userId));
+
         Long existingSlotId = isNotEncapsulated(userId, availabilitySlotDTO);
 
         if (existingSlotId<0) {
@@ -76,7 +80,8 @@ public class AvailabilitySlotService {
 
     @Transactional
     public void updateAvailabilitySlot(Long userId, Long slotId, AvailabilitySlotDTO updatedSlotDTO) {
-        User_ user = userService.getUser(userId);
+        User_ user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
         AvailabilitySlot availabilitySlot = availabilitySlotRepository.findById(slotId)
                 .orElseThrow(() -> new RuntimeException("Availability slot not found with id: " + slotId));
@@ -94,7 +99,8 @@ public class AvailabilitySlotService {
 
     @Transactional
     public void deleteAvailabilitySlot(Long userId, Long slotId) throws AuthenticationException {
-        User_ user = userService.getUser(userId);
+        User_ user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User_ not found with id: " + userId));
 
         AvailabilitySlot availabilitySlot = availabilitySlotRepository.findById(slotId)
                 .orElseThrow(() -> new RuntimeException("Availability slot not found with id: " + slotId));
@@ -109,7 +115,8 @@ public class AvailabilitySlotService {
 
     @Transactional(readOnly = true)
     public List<AvailabilitySlotDTO> getUserAvailabilitySlots(Long userId) {
-        User_ user = userService.getUser(userId);
+        User_ user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User_ not found with id: " + userId));
 
         List<AvailabilitySlot> userAvailabilitySlots = availabilitySlotRepository.findByUserId(userId);
         return userAvailabilitySlots.stream()
@@ -124,12 +131,6 @@ public class AvailabilitySlotService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    @Transactional(readOnly = true)
-    public AvailabilitySlotDTO getAllAvailabilitySlotById(Long slotId) {
-        AvailabilitySlot allAvailabilitySlot = availabilitySlotRepository.findById(slotId)
-                .orElseThrow();
-        return convertToDTO(allAvailabilitySlot);
-    }
 
 
     public AvailabilitySlotDTO convertToDTO(AvailabilitySlot availabilitySlot) {
@@ -137,13 +138,12 @@ public class AvailabilitySlotService {
                 .id(availabilitySlot.getId())
                 .startTime(availabilitySlot.getStartTime())
                 .endTime(availabilitySlot.getEndTime())
-                .userDTO(userService.convertToDTO(availabilitySlot.getUser()))
+                .providerUserId(availabilitySlot.getUser().getId())
                 .available(availabilitySlot.isAvailable())
                 .build();
     }
 
     public AvailabilitySlot convertToEntity(AvailabilitySlotDTO availabilitySlotDTO) {
-
         return AvailabilitySlot.builder()
                 .startTime(availabilitySlotDTO.getStartTime())
                 .endTime(availabilitySlotDTO.getEndTime())
@@ -151,10 +151,10 @@ public class AvailabilitySlotService {
                 .build();
     }
 
-    public AvailabilitySlot setAvailabilitySlotAvailability(Long slotId, boolean available){
+    public AvailabilitySlotDTO setAvailabilitySlotAvailability(Long slotId, boolean available){
         AvailabilitySlot slot =  availabilitySlotRepository.findById(slotId).orElseThrow(() -> new RuntimeException("Slot not found"));
         slot.setAvailable(available);
         availabilitySlotRepository.save(slot);
-        return slot;
+        return this.convertToDTO(slot);
     }
 }

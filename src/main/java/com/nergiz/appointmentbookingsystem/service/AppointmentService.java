@@ -5,15 +5,10 @@ import com.nergiz.appointmentbookingsystem.dto.AvailabilitySlotDTO;
 import com.nergiz.appointmentbookingsystem.dto.UserDTO;
 import com.nergiz.appointmentbookingsystem.model.Appointment;
 import com.nergiz.appointmentbookingsystem.model.AppointmentStatus;
-import com.nergiz.appointmentbookingsystem.model.AvailabilitySlot;
-import com.nergiz.appointmentbookingsystem.model.User_;
 import com.nergiz.appointmentbookingsystem.repository.AppointmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class AppointmentService {
@@ -32,42 +27,27 @@ public class AppointmentService {
         this.userService = userService;
     }
 
-    // In AppointmentService:
-
-    public AppointmentDTO getAppointmentById(Long appointmentId) {
-        Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new RuntimeException("Appointment not found with id: " + appointmentId));
-        return convertToDTO(appointment);
-    }
-
-    public List<AppointmentDTO> getUserAppointments(Long userId) {
-        List<Appointment> userAppointments = appointmentRepository.findByBookerUserIdOrSlotUserId(userId);
-        return userAppointments.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-    public List<AppointmentDTO> getAllAppointments() {
-        List<Appointment> allAppointments = appointmentRepository.findAll();
-        return allAppointments.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-
     @Transactional
     public AppointmentDTO bookAppointment(Long slotId, Long bookerUserId) {
         // Retrieve availability slot DTO
-        AvailabilitySlot availabilitySlot = availabilitySlotService.setAvailabilitySlotAvailability(slotId, false);
+        AvailabilitySlotDTO availabilitySlotDTO = availabilitySlotService.setAvailabilitySlotAvailability(slotId, false);
 
         // Retrieve booker user DTO
-        User_ bookerUser = userService.getUser(bookerUserId);
+        UserDTO bookerUserDTO = userService.getUserById(bookerUserId);
 
         // Create an AppointmentDTO
-        Appointment appointment = Appointment.builder()
-                .bookerUser(bookerUser)
-                .availabilitySlot(availabilitySlot)
+        AppointmentDTO appointmentDTO = AppointmentDTO.builder()
+                .slotDTO(availabilitySlotDTO)
+                .bookerUser(bookerUserDTO)
                 .appointmentStatus(AppointmentStatus.BOOKED)
                 .build();
 
         // Save and return the appointment
-        Appointment savedAppointment = appointmentRepository.save(appointment);
+        return saveAppointment(appointmentDTO);
+    }
+
+    private AppointmentDTO saveAppointment(AppointmentDTO appointmentDTO) {
+        Appointment savedAppointment = appointmentRepository.save(convertToEntity(appointmentDTO));
         return convertToDTO(savedAppointment);
     }
 
@@ -98,7 +78,7 @@ public class AppointmentService {
     private AppointmentDTO convertToDTO(Appointment appointment) {
         return AppointmentDTO.builder()
                 .id(appointment.getId())
-                .availabilitySlotDTO(availabilitySlotService.convertToDTO(appointment.getAvailabilitySlot()))
+                .slotDTO(availabilitySlotService.convertToDTO(appointment.getAvailabilitySlot()))
                 .bookerUser(userService.convertToDTO(appointment.getBookerUser()))
                 .appointmentStatus(appointment.getAppointmentStatus())
                 .build();
@@ -107,8 +87,8 @@ public class AppointmentService {
     private Appointment convertToEntity(AppointmentDTO appointmentDTO) {
         return Appointment.builder()
                 .id(appointmentDTO.getId())
-                .availabilitySlot(availabilitySlotService.convertToEntity(appointmentDTO.getAvailabilitySlotDTO()))
-                .bookerUser(userService.getUser(appointmentDTO.getBookerUser().getId()))
+                .availabilitySlot(availabilitySlotService.convertToEntity(appointmentDTO.getSlotDTO()))
+                .bookerUser(userService.convertToEntity(appointmentDTO.getBookerUser()))
                 .appointmentStatus(appointmentDTO.getAppointmentStatus())
                 .build();
     }

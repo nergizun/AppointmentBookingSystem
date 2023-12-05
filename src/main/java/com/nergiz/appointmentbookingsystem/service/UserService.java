@@ -32,13 +32,9 @@ public class UserService {
     }
     @Transactional(readOnly = true)
     public UserDTO getUserById(Long userId) {
-        User_ existingUser = getUser(userId);
-        return convertToDTO(existingUser);
-    }
-    public User_ getUser(Long userId) {
         User_ existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
-        return existingUser;
+        return convertToDTO(existingUser);
     }
 
     @Transactional

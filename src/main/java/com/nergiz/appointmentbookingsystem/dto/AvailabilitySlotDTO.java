@@ -18,6 +18,6 @@ public class AvailabilitySlotDTO {
     @Builder.Default
     private boolean available = true;
 
-    private Long providerUserId;
+    private UserDTO userDTO;
 
 }

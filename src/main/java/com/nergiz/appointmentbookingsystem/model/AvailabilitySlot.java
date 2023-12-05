@@ -31,4 +31,15 @@ public class AvailabilitySlot {
         this.endTime = endTime;
         this.available = available;
     }
+
+    @Override
+    public String toString() {
+        return "AvailabilitySlot{" +
+                "id=" + id +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", available=" + available +
+                // Other fields excluding references to User_
+                '}';
+    }
 }

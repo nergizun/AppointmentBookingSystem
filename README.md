@@ -28,25 +28,13 @@ Make sure you have the following installed on your machine 📦:
 1. **Clone this repository:**
 
    ```bash
-   git clone https://github.com/nergizun/appointment-booking-system.git
-   cd appointment-booking-system
+   git clone https://github.com/nergizun/AppointmentBookingSystem.git
+   cd AppointmentBookingSystem
 2. **Build and run the application:**
 
    ```bash
    mvn clean install
-   java -jar target/appointment-booking-system.jar
-
-The application will be accessible at http://localhost:8080.
-
-### Docker 🐳 🚢
-To run the application using Docker:
-1. **Build the Docker image:**
-   ```bash
-   docker build -t appointment-booking-system .
-
-2. **Run the Docker container:**
-   ```bash
-   docker run -p 8080:8080 --name appointment-booking-app -d appointment-booking-system
+   java -jar target/AppointmentBookingSystem.jar
 
 
 

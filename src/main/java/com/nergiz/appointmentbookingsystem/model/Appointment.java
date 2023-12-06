@@ -1,5 +1,7 @@
 package com.nergiz.appointmentbookingsystem.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.NotNull;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,6 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,10 +27,13 @@ public class Appointment {
     @JoinColumn(name = "booker_user_id")
     private User_ bookerUser;
 
-    @OneToMany(mappedBy = "bookedAppointment", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "bookedAppointment", fetch = FetchType.EAGER)
     private List<Notification> notifications = new ArrayList<>();
 
+    @NotNull(message = "Start time cannot be null")
     private LocalDateTime startTime;
+
+    @NotNull(message = "End time cannot be null")
     private LocalDateTime endTime;
 
     //@Column(name = "appointment_status", columnDefinition = "SMALLINT check (appointment_status between 0 and 2)")
@@ -51,5 +57,18 @@ public class Appointment {
         this.startTime = startTime;
         this.endTime = endTime;
         this.appointmentStatus = appointmentStatus;
+    }
+
+    @Override
+    public String toString() {
+        return "Appointment{" +
+                "id=" + id +
+                ", availabilitySlot=" + availabilitySlot +
+                ", bookerUser=" + bookerUser +
+                ", notifications=" + notifications +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", appointmentStatus=" + appointmentStatus +
+                '}';
     }
 }

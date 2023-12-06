@@ -1,6 +1,7 @@
 package com.nergiz.appointmentbookingsystem.service;
 
 import com.nergiz.appointmentbookingsystem.dto.AvailabilitySlotDTO;
+import com.nergiz.appointmentbookingsystem.exception.EncapsulatedSlotException;
 import com.nergiz.appointmentbookingsystem.model.AvailabilitySlot;
 import com.nergiz.appointmentbookingsystem.model.User_;
 import com.nergiz.appointmentbookingsystem.repository.AvailabilitySlotRepository;
@@ -43,7 +44,7 @@ public class AvailabilitySlotService {
             availabilitySlot = availabilitySlotRepository.save(availabilitySlot);
             return convertToDTO(availabilitySlot);
         } else {
-            throw new RuntimeException("New availability slot is encapsulated by an existing slot with id " + existingSlotId);
+            throw new EncapsulatedSlotException("New availability slot is encapsulated by an existing slot with id " + existingSlotId);
         }
     }
 
@@ -70,7 +71,9 @@ public class AvailabilitySlotService {
             return false;
         }
 
-        // If we reach here, there is some overlap
+        if (newStart.isEqual(existingEnd) || newEnd.isEqual(existingStart)) {
+            return false;
+        }
         return true;
     }
 
@@ -153,6 +156,9 @@ public class AvailabilitySlotService {
 
     public AvailabilitySlot setAvailabilitySlotAvailability(Long slotId, boolean available){
         AvailabilitySlot slot =  availabilitySlotRepository.findById(slotId).orElseThrow(() -> new RuntimeException("Slot not found"));
+        if(slot.isAvailable() == available){
+            throw new RuntimeException("Slot is already booked/canceled");
+        }
         slot.setAvailable(available);
         availabilitySlotRepository.save(slot);
         return slot;

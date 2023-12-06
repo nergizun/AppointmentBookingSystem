@@ -21,22 +21,22 @@ public class AppointmentController {
     }
 
     @GetMapping("/{appointmentId}")
-    public ResponseEntity<AppointmentDTO> getAppointmentById(@PathVariable Long appointmentId) {
+    public ResponseEntity<?> getAppointmentById(@PathVariable Long appointmentId) {
         try {
             AppointmentDTO appointmentDTO = appointmentService.getAppointmentById(appointmentId);
             return ResponseEntity.ok(appointmentDTO);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<AppointmentDTO>> getUserAppointments(@PathVariable Long userId) {
+    public ResponseEntity<?> getUserAppointments(@PathVariable Long userId) {
         try {
             List<AppointmentDTO> appointments = appointmentService.getUserAppointments(userId);
             return ResponseEntity.ok(appointments);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 

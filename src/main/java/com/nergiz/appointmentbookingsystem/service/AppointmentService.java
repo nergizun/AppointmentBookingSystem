@@ -2,13 +2,12 @@ package com.nergiz.appointmentbookingsystem.service;
 
 import com.nergiz.appointmentbookingsystem.dto.AppointmentDTO;
 import com.nergiz.appointmentbookingsystem.dto.NotificationDTO;
-import com.nergiz.appointmentbookingsystem.model.Appointment;
-import com.nergiz.appointmentbookingsystem.model.AppointmentStatus;
-import com.nergiz.appointmentbookingsystem.model.AvailabilitySlot;
-import com.nergiz.appointmentbookingsystem.model.User_;
+import com.nergiz.appointmentbookingsystem.event.NotificationEvent;
+import com.nergiz.appointmentbookingsystem.model.*;
 import com.nergiz.appointmentbookingsystem.repository.AppointmentRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +23,7 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final AvailabilitySlotService availabilitySlotService;
     private final UserService userService;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final NotificationService notificationService;
 
@@ -32,11 +32,13 @@ public class AppointmentService {
             AppointmentRepository appointmentRepository,
             AvailabilitySlotService availabilitySlotService,
             UserService userService,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            ApplicationEventPublisher eventPublisher) {
         this.appointmentRepository = appointmentRepository;
         this.availabilitySlotService = availabilitySlotService;
         this.userService = userService;
         this.notificationService = notificationService;
+        this.eventPublisher = eventPublisher;
     }
 
     // In AppointmentService:
@@ -79,6 +81,7 @@ public class AppointmentService {
 
         // Save and return the appointment
         Appointment savedAppointment = appointmentRepository.save(appointment);
+        eventPublisher.publishEvent(new NotificationEvent(savedAppointment, NotificationType.NEW_BOOKING));
         return convertToDTO(savedAppointment);
     }
 
@@ -96,7 +99,7 @@ public class AppointmentService {
         appointment.setAppointmentStatus(AppointmentStatus.CANCELLED);
 
         availabilitySlotService.setAvailabilitySlotAvailability(appointment.getAvailabilitySlot().getId(), true);
-
+        eventPublisher.publishEvent(new NotificationEvent(appointment, NotificationType.CANCEL));
         // Save the updated appointment
         appointmentRepository.save(appointment);
     }

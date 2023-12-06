@@ -14,7 +14,7 @@ import javax.security.sasl.AuthenticationException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/availability-slots")
+@RequestMapping("/booking/availability-slots")
 public class AvailabilitySlotController {
 
     private final AvailabilitySlotService availabilitySlotService;

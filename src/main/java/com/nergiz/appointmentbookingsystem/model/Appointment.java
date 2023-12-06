@@ -12,6 +12,8 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Appointment {
@@ -28,6 +30,7 @@ public class Appointment {
     private User_ bookerUser;
 
     @OneToMany(mappedBy = "bookedAppointment", fetch = FetchType.EAGER)
+    @Builder.Default
     private List<Notification> notifications = new ArrayList<>();
 
     @NotNull(message = "Start time cannot be null")
@@ -40,32 +43,12 @@ public class Appointment {
     @Enumerated(EnumType.STRING)
     private AppointmentStatus appointmentStatus = AppointmentStatus.BOOKED;
 
-    @Builder
-    public Appointment(
-            Long id,
-            AvailabilitySlot availabilitySlot,
-            User_ bookerUser,
-            List<Notification> notifications,
-            LocalDateTime startTime,
-            LocalDateTime endTime,
-            AppointmentStatus appointmentStatus
-    ) {
-        this.id = id;
-        this.availabilitySlot = availabilitySlot;
-        this.bookerUser = bookerUser;
-        this.notifications = notifications;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.appointmentStatus = appointmentStatus;
-    }
-
     @Override
     public String toString() {
         return "Appointment{" +
                 "id=" + id +
                 ", availabilitySlot=" + availabilitySlot +
                 ", bookerUser=" + bookerUser +
-                ", notifications=" + notifications +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
                 ", appointmentStatus=" + appointmentStatus +

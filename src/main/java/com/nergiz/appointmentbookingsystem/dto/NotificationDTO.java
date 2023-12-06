@@ -12,6 +12,7 @@ public class NotificationDTO {
     private  Long id;
     private NotificationType type;
     private String recipientEmail;
+    private Long recipientId;
     private String subject;
     private String message;
     @Builder.Default

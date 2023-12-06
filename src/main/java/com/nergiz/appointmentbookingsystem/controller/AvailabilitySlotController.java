@@ -2,6 +2,7 @@ package com.nergiz.appointmentbookingsystem.controller;
 
 import com.nergiz.appointmentbookingsystem.dto.AvailabilitySlotDTO;
 import com.nergiz.appointmentbookingsystem.exception.UserNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,15 +33,9 @@ public class AvailabilitySlotController {
     @PostMapping("/add/{userId}")
     public ResponseEntity<?> addAvailabilitySlot(
             @PathVariable Long userId,
-            @RequestBody AvailabilitySlotDTO availabilitySlotDTO) {
-        try {
+            @Valid @RequestBody AvailabilitySlotDTO availabilitySlotDTO) {
             AvailabilitySlotDTO newSlot = availabilitySlotService.addAvailabilitySlot(userId, availabilitySlotDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(newSlot);
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
     }
 
 

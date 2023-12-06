@@ -2,17 +2,20 @@ package com.nergiz.appointmentbookingsystem.service;
 
 import com.nergiz.appointmentbookingsystem.dto.UserDTO;
 import com.nergiz.appointmentbookingsystem.exception.UserNotFoundException;
+import com.nergiz.appointmentbookingsystem.exception.UsernameNotUniqueException;
 import com.nergiz.appointmentbookingsystem.model.User_;
 import com.nergiz.appointmentbookingsystem.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.beans.Transient;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
+@Slf4j
 @Service
 public class UserService {
 
@@ -36,13 +39,15 @@ public class UserService {
         return convertToDTO(existingUser);
     }
     public User_ getUser(Long userId) {
-        User_ existingUser = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
-        return existingUser;
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
     }
 
     @Transactional
     public UserDTO createUser(UserDTO userDTO) {
+        isUsernameUnique(userDTO.getUsername());
+
+        log.info("USER CREATE");
         User_ user = convertToEntity(userDTO);
         user = userRepository.save(user);
         return convertToDTO(user);
@@ -54,7 +59,6 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
         existingUser.setUsername(updatedUserDTO.getUsername());
-        existingUser.setPassword(updatedUserDTO.getPassword());
         existingUser.setEmail(updatedUserDTO.getEmail());
         existingUser = userRepository.save(existingUser);
         return convertToDTO(existingUser);
@@ -83,9 +87,14 @@ public class UserService {
                 .lastname(userDTO.getLastname())
                 .name(userDTO.getName())
                 .contactNumber(userDTO.getContactNumber())
-                .password(userDTO.getPassword())
                 .email(userDTO.getEmail())
                 .build();
     }
 
+    public void isUsernameUnique(String username) {
+
+        if (userRepository.findByUsername(username).isPresent()){
+            throw new UsernameNotUniqueException(username);
+        }
+    }
 }

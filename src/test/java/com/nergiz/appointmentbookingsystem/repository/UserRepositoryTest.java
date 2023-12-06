@@ -22,7 +22,6 @@ public class UserRepositoryTest {
         // Given
         User_ user = new User_();
         user.setUsername("testUser");
-        user.setPassword("testPassword");
 
         // When
         User_ savedUser = userRepository.save(user);
@@ -30,7 +29,6 @@ public class UserRepositoryTest {
         // Then
         assertNotNull(savedUser.getId());
         assertEquals("testUser", savedUser.getUsername());
-        assertEquals("testPassword", savedUser.getPassword());
     }
 
     @Test
@@ -38,7 +36,6 @@ public class UserRepositoryTest {
         // Given
         User_ user = new User_();
         user.setUsername("testUser");
-        user.setPassword("testPassword");
         User_ savedUser = userRepository.save(user);
 
         // When
@@ -48,6 +45,5 @@ public class UserRepositoryTest {
         assertTrue(retrievedUserOptional.isPresent());
         User_ retrievedUser = retrievedUserOptional.get();
         assertEquals("testUser", retrievedUser.getUsername());
-        assertEquals("testPassword", retrievedUser.getPassword());
     }
 }

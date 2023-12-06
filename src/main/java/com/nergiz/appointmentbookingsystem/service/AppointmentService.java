@@ -1,20 +1,23 @@
 package com.nergiz.appointmentbookingsystem.service;
 
 import com.nergiz.appointmentbookingsystem.dto.AppointmentDTO;
-import com.nergiz.appointmentbookingsystem.dto.AvailabilitySlotDTO;
-import com.nergiz.appointmentbookingsystem.dto.UserDTO;
+import com.nergiz.appointmentbookingsystem.dto.NotificationDTO;
 import com.nergiz.appointmentbookingsystem.model.Appointment;
 import com.nergiz.appointmentbookingsystem.model.AppointmentStatus;
 import com.nergiz.appointmentbookingsystem.model.AvailabilitySlot;
 import com.nergiz.appointmentbookingsystem.model.User_;
 import com.nergiz.appointmentbookingsystem.repository.AppointmentRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class AppointmentService {
 
@@ -22,14 +25,18 @@ public class AppointmentService {
     private final AvailabilitySlotService availabilitySlotService;
     private final UserService userService;
 
+    private final NotificationService notificationService;
+
     @Autowired
     public AppointmentService(
             AppointmentRepository appointmentRepository,
             AvailabilitySlotService availabilitySlotService,
-            UserService userService) {
+            UserService userService,
+            NotificationService notificationService) {
         this.appointmentRepository = appointmentRepository;
         this.availabilitySlotService = availabilitySlotService;
         this.userService = userService;
+        this.notificationService = notificationService;
     }
 
     // In AppointmentService:
@@ -41,6 +48,7 @@ public class AppointmentService {
     }
 
     public List<AppointmentDTO> getUserAppointments(Long userId) {
+        userService.getUser(userId);
         List<Appointment> userAppointments = appointmentRepository.findByBookerUserIdOrSlotUserId(userId);
         return userAppointments.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
@@ -53,6 +61,7 @@ public class AppointmentService {
 
     @Transactional
     public AppointmentDTO bookAppointment(Long slotId, Long bookerUserId) {
+        log.info("BOOK APPOINTMENT");
         // Retrieve availability slot DTO
         AvailabilitySlot availabilitySlot = availabilitySlotService.setAvailabilitySlotAvailability(slotId, false);
 
@@ -62,8 +71,10 @@ public class AppointmentService {
         // Create an AppointmentDTO
         Appointment appointment = Appointment.builder()
                 .bookerUser(bookerUser)
-                .availabilitySlot(availabilitySlot)
                 .appointmentStatus(AppointmentStatus.BOOKED)
+                .startTime(availabilitySlot.getStartTime())
+                .endTime(availabilitySlot.getEndTime())
+                .availabilitySlot(availabilitySlot)
                 .build();
 
         // Save and return the appointment
@@ -90,19 +101,38 @@ public class AppointmentService {
         appointmentRepository.save(appointment);
     }
 
+    public List<Appointment> getUpcomingAppointments(int minutes) {
+        LocalDateTime endTime = LocalDateTime.now().plusMinutes(minutes);
+
+        return appointmentRepository.findByStartTimeBeforeAndAppointmentStatus(
+                endTime,
+                AppointmentStatus.BOOKED
+        );
+    }
+
     private boolean isParticipant(Long userId, Appointment appointment) {
         return userId.equals(appointment.getAvailabilitySlot().getUser().getId()) ||
                 userId.equals(appointment.getBookerUser().getId());
     }
 
     private AppointmentDTO convertToDTO(Appointment appointment) {
+        List<NotificationDTO> notificationDTOList = Collections.emptyList();
+
+        if (appointment.getNotifications() != null) {
+            notificationDTOList = appointment.getNotifications().stream()
+                    .map(notificationService::convertToDTO)
+                    .collect(Collectors.toList());
+        }
+
         return AppointmentDTO.builder()
                 .id(appointment.getId())
                 .availabilitySlotDTO(availabilitySlotService.convertToDTO(appointment.getAvailabilitySlot()))
                 .bookerUser(userService.convertToDTO(appointment.getBookerUser()))
+                .notificationDTOList(notificationDTOList)
                 .appointmentStatus(appointment.getAppointmentStatus())
                 .build();
     }
+
 
     private Appointment convertToEntity(AppointmentDTO appointmentDTO) {
         return Appointment.builder()

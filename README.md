@@ -28,7 +28,7 @@ Make sure you have the following installed on your machine 📦:
 1. **Clone this repository:**
 
    ```bash
-   git clone https://github.com/your-username/appointment-booking-system.git
+   git clone https://github.com/nergizun/appointment-booking-system.git
    cd appointment-booking-system
 2. **Build and run the application:**
 

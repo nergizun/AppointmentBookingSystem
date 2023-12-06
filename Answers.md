@@ -31,6 +31,7 @@ The Appointment Booking System manages user appointments using the concepts of a
 ### Entities
 
 - **Notification:** Represents a notification associated with a specific appointment.
+- The ApplicationEventPublisher feature is employed to facilitate the asynchronous notification process, ensuring that it does not block transactional commits during booking or canceling events. In the context of a distributed microservices architecture, messaging systems such as Kafka or RabbitMQ could be considered for inter-service communication.
   - Attributes: ID, notification type, recipient email, recipient ID, subject, message, sent flag, sent time, booked appointment.
 
 ### Notification Types

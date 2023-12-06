@@ -1,6 +1,7 @@
 package com.nergiz.appointmentbookingsystem.service;
 
 import com.nergiz.appointmentbookingsystem.model.Appointment;
+import com.nergiz.appointmentbookingsystem.model.AppointmentStatus;
 import com.nergiz.appointmentbookingsystem.model.Notification;
 import com.nergiz.appointmentbookingsystem.model.NotificationType;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,7 @@ public class ReminderService {
 
             for (Appointment appointment : upcomingAppointments) {
                 log.info("Processing appointment with ID: {}", appointment.getId());
-
+                appointment.setAppointmentStatus(AppointmentStatus.BOOKED_REMINDED);
                 // Create two notifications for both participants
                 notificationService.createAndSendNotifications(appointment, NotificationType.REMINDER);
             }

@@ -64,11 +64,9 @@ public class NotificationService {
 
         // Add notifications to the appointment's list
         appointment.getNotifications().addAll(notifications);
-        appointment.setAppointmentStatus(AppointmentStatus.BOOKED_REMINDED);
-        appointmentRepository.save(appointment);
         sendEmails(notifications);
         notificationRepository.saveAll(notifications);
-
+        appointmentRepository.save(appointment);
     }
     private void sendEmails(List<Notification> notifications) {
         for (Notification notification : notifications) {

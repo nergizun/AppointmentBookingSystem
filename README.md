@@ -21,7 +21,6 @@ Make sure you have the following installed on your machine 📦:
 
 - [Java JDK](https://www.oracle.com/java/technologies/javase-downloads.html)
 - [Maven](https://maven.apache.org/download.cgi)
-- [Docker](https://www.docker.com/get-started)
 
 ### Running the Application
 
